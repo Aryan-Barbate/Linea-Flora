@@ -111,13 +111,13 @@ export default function CardScreen() {
 
       <div className="flex flex-row gap-4 justify-center m-auto mt-8">
         <button
-          onClick={() => setStep(2)}
+          onClick={() => setStep(1)}
           className="text-sm px-4 py-2 font-mono uppercase tracking-widest border border-black transition-colors duration-150"
         >
           BACK
         </button>
         <button
-          onClick={() => setStep(4)}
+          onClick={() => setStep(3)}
           className="text-sm px-4 py-2 font-mono uppercase tracking-widest bg-[#000000] text-beige transition-colors duration-150"
         >
           NEXT

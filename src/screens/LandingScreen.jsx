@@ -55,7 +55,7 @@ export default function LandingScreen() {
             BUILD IT IN BLACK AND WHITE
           </button>
           <button
-            onClick={() => setStep(5)}
+            onClick={() => setStep(7)}
             className="text-sm px-8 py-4 underline text-black m-2 font-mono uppercase tracking-widest transition-opacity duration-150 hover:opacity-80"
           >
             VIEW GARDEN
