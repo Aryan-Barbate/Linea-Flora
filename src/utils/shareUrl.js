@@ -1,6 +1,6 @@
-export function encodeBouquetState(mode, selectedFlowers, letter) {
+export function encodeBouquetState(mode, flowers, letter) {
   const params = new URLSearchParams();
-  if (selectedFlowers.length) params.set('flowers', selectedFlowers.join(','));
+  if (flowers.length) params.set('flowers', flowers.join(','));
   if (mode !== 'color') params.set('mode', mode);
   if (letter.message) params.set('message', letter.message);
   if (letter.recipient) params.set('recipient', letter.recipient);
@@ -16,8 +16,11 @@ export function decodeBouquetState() {
   const message = params.get('message');
   const recipient = params.get('recipient');
   const sender = params.get('sender');
+  const flowers = flowersStr
+    ? [...new Set(flowersStr.split(',').filter(Boolean))]
+    : [];
   return {
-    selectedFlowers: flowersStr ? flowersStr.split(',').filter(Boolean) : [],
+    flowers,
     mode: mode === 'mono' ? 'mono' : 'color',
     letter: { sender: sender || '', recipient: recipient || '', message: message || '' },
   };

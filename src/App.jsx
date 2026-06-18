@@ -26,12 +26,12 @@ const STEPS = [
 ];
 
 function AppContent() {
-  const { step, setStep, setSelectedFlowers, setMode, setLetter } = useBouquet();
+  const { step, setStep, setFlowers, setMode, setLetter } = useBouquet();
 
   useEffect(() => {
     const state = decodeBouquetState();
-    if (state.selectedFlowers.length > 0) {
-      setSelectedFlowers(state.selectedFlowers);
+    if (state.flowers.length > 0) {
+      setFlowers(state.flowers);
       setMode(state.mode);
       setLetter(state.letter);
       setStep(4);

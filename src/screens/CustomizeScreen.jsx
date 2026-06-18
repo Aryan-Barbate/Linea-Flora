@@ -3,7 +3,7 @@ import BouquetPreview from '../components/BouquetPreview';
 import StepHeader from '../components/StepHeader';
 
 export default function CustomizeScreen() {
-  const { selectedFlowers, mode, setMode, greenery, setGreenery, arrangementSeed, shuffleArrangement, setStep, totalFlowers, canProceed } = useBouquet();
+  const { flowers, mode, setMode, greenery, setGreenery, arrangementSeed, shuffleArrangement, setStep, canProceed } = useBouquet();
 
   return (
     <div className="flex-1 flex flex-col items-center px-4 py-8 min-h-screen">
@@ -39,7 +39,7 @@ export default function CustomizeScreen() {
         </div>
 
         <BouquetPreview
-          selectedFlowers={selectedFlowers}
+          flowers={flowers}
           mode={mode}
           greenery={greenery}
           arrangementSeed={arrangementSeed}

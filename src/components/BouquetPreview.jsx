@@ -1,63 +1,73 @@
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FLOWERS, getBouquetImgSize } from '../context/BouquetContext';
+import { arrangeBouquet } from '../utils/bouquetArranger';
 
 const CDN = {
   color: 'https://assets.pauwee.com/color',
   mono: 'https://assets.pauwee.com/mono',
 };
 
-function shuffleArray(arr, seed) {
-  const result = [...arr];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = (seed * (i + 1) * 2654435761 + i) % (i + 1);
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
+function createRng(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
 }
 
-export default function BouquetPreview({ selectedFlowers, mode, greenery, arrangementSeed }) {
+export default function BouquetPreview({ flowers, mode, greenery, arrangementSeed }) {
   const base = CDN[mode] || CDN.color;
   const bushline = greenery + 1;
 
-  const items = useMemo(() => {
-    return shuffleArray(selectedFlowers, arrangementSeed + 1).map((id) => {
-      const size = getBouquetImgSize(id);
-      const rot = Math.random() * 10 - 5;
-      return { id, size, rot };
-    });
-  }, [selectedFlowers, arrangementSeed]);
+  const { backItems, frontItems, greeneryOffset } = useMemo(() => {
+    const items = arrangeBouquet(flowers, arrangementSeed, 0.95);
+    const rng = createRng(arrangementSeed * 73 + 29);
+    const greeneryX = ((rng() - 0.5) * 6);
+    return {
+      backItems: items.filter((item) => item.z < 30),
+      frontItems: items.filter((item) => item.z >= 30),
+      greeneryOffset: greeneryX,
+    };
+  }, [flowers, arrangementSeed]);
 
   return (
     <div className="flex relative justify-center items-center py-4 my-16">
-      <div className="relative w-[500px] min-h-[410px]">
+      <div className="relative w-[500px] min-h-[410px] overflow-visible">
         <img
           src={`${base}/bush/bush-${bushline}.png`}
           alt=""
-          width={600}
-          height={500}
-          className="absolute top-1/2 left-1/2 z-0 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+          style={{
+            zIndex: 0,
+            transform: `translateX(${greeneryOffset}%) scale(0.75)`,
+            opacity: 0.85,
+          }}
           draggable={false}
         />
 
-        <div className="flex flex-wrap-reverse w-[300px] justify-center items-center -space-x-4 -space-y-20 relative m-auto">
+        <div className="absolute inset-0 pointer-events-none select-none" style={{ zIndex: 10 }}>
           <AnimatePresence mode="popLayout">
-            {items.map((item, i) => (
+            {backItems.map((item) => (
               <motion.div
                 key={`${item.id}-${arrangementSeed}`}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-                className="flex relative justify-center items-center pt-4"
-                style={{ order: i }}
+                className="absolute"
+                style={{
+                  left: `calc(50% + ${item.x}%)`,
+                  top: `calc(50% + ${item.y}%)`,
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: item.z,
+                }}
               >
                 <img
                   src={`${base}/flowers/${item.id}.webp`}
                   alt={item.id}
                   width={item.size}
                   height={item.size}
-                  className="relative z-10 pointer-events-none select-none"
+                  className="pointer-events-none select-none"
                   style={{ transform: `rotate(${item.rot}deg)` }}
                   draggable={false}
                 />
@@ -69,11 +79,45 @@ export default function BouquetPreview({ selectedFlowers, mode, greenery, arrang
         <img
           src={`${base}/bush/bush-${bushline}-top.png`}
           alt=""
-          width={600}
-          height={500}
-          className="absolute top-1/2 left-1/2 z-10 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+          style={{
+            zIndex: 25,
+            transform: `translateX(${-greeneryOffset * 0.5}%) scale(0.75)`,
+            opacity: 0.7,
+          }}
           draggable={false}
         />
+
+        <div className="absolute inset-0 pointer-events-none select-none" style={{ zIndex: 35 }}>
+          <AnimatePresence mode="popLayout">
+            {frontItems.map((item) => (
+              <motion.div
+                key={`${item.id}-${arrangementSeed}`}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 20 }}
+                className="absolute"
+                style={{
+                  left: `calc(50% + ${item.x}%)`,
+                  top: `calc(50% + ${item.y}%)`,
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: item.z,
+                }}
+              >
+                <img
+                  src={`${base}/flowers/${item.id}.webp`}
+                  alt={item.id}
+                  width={item.size}
+                  height={item.size}
+                  className="pointer-events-none select-none"
+                  style={{ transform: `rotate(${item.rot}deg)` }}
+                  draggable={false}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

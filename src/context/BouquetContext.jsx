@@ -11,7 +11,7 @@ export const FLOWERS = [
   { id: 'zinnia', name: 'Zinnia', meaning: 'Lasting Affection', birthMonth: 'July', size: 'medium' },
   { id: 'ranunculus', name: 'Ranunculus', meaning: 'Radiant Charm', birthMonth: 'March', size: 'medium' },
   { id: 'sunflower', name: 'Sunflower', meaning: 'Adoration', birthMonth: 'August', size: 'large' },
-  { id: 'lily', name: 'Lily', meaning: 'Purity', birthBirth: 'May', size: 'large' },
+  { id: 'lily', name: 'Lily', meaning: 'Purity', birthMonth: 'May', size: 'large' },
   { id: 'daisy', name: 'Daisy', meaning: 'Innocence', birthMonth: 'April', size: 'small' },
   { id: 'peony', name: 'Peony', meaning: 'Romance', birthMonth: 'May', size: 'medium' },
   { id: 'rose', name: 'Rose', meaning: 'Love and passion', birthMonth: 'June', size: 'medium' },
@@ -35,23 +35,24 @@ export function getBouquetImgSize(id) {
 export function BouquetProvider({ children, initialState }) {
   const [step, setStep] = useState(initialState?.step ?? 0);
   const [mode, setMode] = useState(initialState?.mode ?? 'color');
-  const [selectedFlowers, setSelectedFlowers] = useState(initialState?.selectedFlowers ?? []);
+  const [flowers, setFlowers] = useState(initialState?.flowers ?? []);
   const [letter, setLetter] = useState(initialState?.letter ?? { sender: '', recipient: '', message: '' });
   const [greenery, setGreenery] = useState(initialState?.greenery ?? 0);
   const [arrangementSeed, setArrangementSeed] = useState(0);
 
-  const totalFlowers = selectedFlowers.length;
+  const totalFlowers = useMemo(() => flowers.length, [flowers]);
   const canProceed = totalFlowers >= 6 && totalFlowers <= 10;
 
-  const toggleFlower = useCallback((id) => {
-    setSelectedFlowers((prev) => {
-      if (prev.includes(id)) {
-        if (prev.length <= 6) return prev;
-        return prev.filter((f) => f !== id);
-      }
+  const addFlower = useCallback((id) => {
+    setFlowers((prev) => {
       if (prev.length >= 10) return prev;
+      if (prev.includes(id)) return prev;
       return [...prev, id];
     });
+  }, []);
+
+  const removeFlower = useCallback((id) => {
+    setFlowers((prev) => prev.filter((f) => f !== id));
   }, []);
 
   const shuffleArrangement = useCallback(() => {
@@ -61,15 +62,15 @@ export function BouquetProvider({ children, initialState }) {
   const value = useMemo(() => ({
     step, setStep,
     mode, setMode,
-    selectedFlowers, setSelectedFlowers,
-    toggleFlower,
+    flowers, setFlowers,
+    addFlower, removeFlower,
     letter, setLetter,
     greenery, setGreenery,
     arrangementSeed, setArrangementSeed,
     shuffleArrangement,
     totalFlowers,
     canProceed,
-  }), [step, mode, selectedFlowers, toggleFlower, letter, greenery, arrangementSeed, shuffleArrangement, totalFlowers, canProceed]);
+  }), [step, mode, flowers, addFlower, removeFlower, letter, greenery, arrangementSeed, shuffleArrangement, totalFlowers, canProceed]);
 
   return (
     <BouquetContext.Provider value={value}>

@@ -65,12 +65,12 @@ export default function LandingScreen() {
         <p className="mt-10 text-sm text-gray-500 font-mono text-xs tracking-wider">
           made by{' '}
           <a
-            href="https://x.com/pau_wee_"
+            href="https://github.com/Aryan-Barbate"
             target="_blank"
             rel="noopener noreferrer"
             className="underline text-gray-500"
           >
-            @pau_wee_
+            @AB
           </a>
         </p>
       </div>

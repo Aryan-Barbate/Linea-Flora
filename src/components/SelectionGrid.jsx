@@ -26,24 +26,26 @@ function FlowerTooltip({ children, flower }) {
 }
 
 export default function SelectionGrid() {
-  const { selectedFlowers, toggleFlower, mode } = useBouquet();
+  const { flowers, addFlower, removeFlower, mode } = useBouquet();
   const base = CDN[mode] || CDN.color;
 
   return (
     <Tooltip.Provider delayDuration={0} disableHoverableContent>
       <div className="flex flex-wrap justify-center gap-4 mb-8 items-center min-h-[200px]">
         {FLOWERS.map((flower) => {
-          const isSelected = selectedFlowers.includes(flower.id);
+          const isSelected = flowers.includes(flower.id);
           return (
             <FlowerTooltip key={flower.id} flower={flower}>
               <motion.button
                 whileHover={{ y: -6 }}
                 whileTap={{ scale: 0.95 }}
-                animate={isSelected ? { scale: [1, 1.06, 1] } : { scale: 1 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
                 onClick={(e) => {
                   e.preventDefault();
-                  toggleFlower(flower.id);
+                  if (isSelected) {
+                    removeFlower(flower.id);
+                  } else {
+                    addFlower(flower.id);
+                  }
                 }}
                 className="flex relative flex-col items-center cursor-pointer"
               >
@@ -51,7 +53,7 @@ export default function SelectionGrid() {
                   className={`
                     ${getGridSize(flower.id)} flex items-center justify-center
                     transition-transform duration-300 overflow-hidden
-                    ${isSelected ? 'transform -translate-y-2' : ''}
+                    ${isSelected ? 'transform -translate-y-2 ring-2 ring-black ring-offset-2' : ''}
                     hover:transform hover:-translate-y-2
                   `}
                 >
@@ -62,17 +64,15 @@ export default function SelectionGrid() {
                       alt={flower.name}
                       width={getGridSizePx(flower.id)}
                       height={getGridSizePx(flower.id)}
-                      className={`object-cover ${isSelected ? 'opacity-90' : ''}`}
+                      className="object-cover"
                       loading="eager"
                       draggable={false}
                     />
                   </picture>
                 </div>
                 {isSelected && (
-                  <div className="absolute top-0 right-0 w-6 h-6 bg-black rounded-full flex items-center justify-center">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                  <div className="flex absolute top-0 right-0 justify-center items-center w-5 h-5 text-xs rounded-full bg-black text-white sm:w-6 sm:h-6 font-mono">
+                    ✓
                   </div>
                 )}
               </motion.button>
@@ -80,6 +80,27 @@ export default function SelectionGrid() {
           );
         })}
       </div>
+
+      {flowers.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 text-sm opacity-50 font-mono text-center">Click a selected flower to deselect it.</p>
+          <div className="flex flex-wrap gap-2 justify-center mt-2">
+            {flowers.map((id) => {
+              const flower = FLOWERS.find((x) => x.id === id);
+              if (!flower) return null;
+              return (
+                <div
+                  key={id}
+                  onClick={() => removeFlower(id)}
+                  className="px-3 py-1 font-mono text-xs rounded-full border transition-colors cursor-pointer border-black/30 text-black hover:bg-black hover:text-white"
+                >
+                  {flower.name.toUpperCase()}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </Tooltip.Provider>
   );
 }
