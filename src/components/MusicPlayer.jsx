@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
 const PRESET_YOUTUBE = {
@@ -34,42 +34,14 @@ function extractSpotifyId(url) {
 }
 
 function YouTubeEmbed({ videoId }) {
-  const iframeRef = useRef(null);
-  const [needClick, setNeedClick] = useState(false);
-  const [key, setKey] = useState(0);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setNeedClick(true), 4000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const restart = () => {
-    setKey((k) => k + 1);
-    setNeedClick(false);
-  };
-
   return (
-    <>
-      <iframe
-        key={key}
-        ref={iframeRef}
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}`}
-        allow="autoplay; encrypted-media"
-        allowFullScreen={false}
-        title="bg-music"
-        style={{ position: 'absolute', top: 0, left: 0, width: '320px', height: '180px', border: 'none' }}
-      />
-      {needClick && createPortal(
-        <button
-          onClick={restart}
-          className="fixed bottom-4 right-4 z-50 bg-black text-beige w-10 h-10 flex items-center justify-center text-sm hover:bg-black/80 transition-colors shadow-md font-mono"
-          title="Click to play music"
-        >
-          ♪
-        </button>,
-        document.body
-      )}
-    </>
+    <iframe
+      src={`https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}`}
+      allow="autoplay; encrypted-media"
+      allowFullScreen={false}
+      title="bg-music"
+      style={{ position: 'absolute', top: 0, left: 0, width: '320px', height: '180px', border: 'none' }}
+    />
   );
 }
 
@@ -87,6 +59,8 @@ function SpotifyEmbed({ trackId }) {
 }
 
 export default function MusicPlayer({ music }) {
+  const [isPlaying, setIsPlaying] = useState(true);
+
   if (!music || music.type === 'none') return null;
 
   const presetLabel = music.type === 'preset' ? music.preset?.replace(/-/g, ' ') : null;
@@ -100,17 +74,41 @@ export default function MusicPlayer({ music }) {
     : 'Custom';
 
   return (
-    <div className="relative mb-3" style={{ height: 0, overflow: 'hidden' }}>
-      {(music.type === 'youtube' && ytId) && <YouTubeEmbed videoId={ytId} />}
-      {(music.type === 'spotify' && spId) && <SpotifyEmbed trackId={spId} />}
-      {(music.type === 'preset' && presetVideoId) && <YouTubeEmbed videoId={presetVideoId} />}
-      {(music.type === 'custom' && music.source) && (
-        <audio src={music.source} loop autoPlay style={{ display: 'none' }} />
+    <>
+      {isPlaying && (
+        <div className="relative" style={{ height: 0, overflow: 'hidden' }}>
+          {(music.type === 'youtube' && ytId) && <YouTubeEmbed videoId={ytId} />}
+          {(music.type === 'spotify' && spId) && <SpotifyEmbed trackId={spId} />}
+          {(music.type === 'preset' && presetVideoId) && <YouTubeEmbed videoId={presetVideoId} />}
+          {(music.type === 'custom' && music.source) && (
+            <audio src={music.source} loop autoPlay style={{ display: 'none' }} />
+          )}
+        </div>
       )}
 
-      <div className="flex items-center gap-2 font-mono text-[10px] text-black/40 uppercase tracking-widest">
-        <span>♪ {label}</span>
-      </div>
-    </div>
+      {createPortal(
+        <button
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="fixed bottom-6 right-6 z-50 bg-[#121212]/90 backdrop-blur-md text-[#FDFBF7] hover:bg-black px-4 py-2.5 rounded-full flex items-center gap-2.5 text-xs font-mono tracking-widest shadow-lg border border-white/10 transition-all duration-300 hover:scale-[1.05] active:scale-[0.95]"
+          title={isPlaying ? "Mute music" : "Play music"}
+        >
+          {isPlaying ? (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>♪ MUSIC: ON ({label})</span>
+            </>
+          ) : (
+            <>
+              <span className="h-2 w-2 rounded-full bg-amber-500/80"></span>
+              <span>🔇 MUSIC: OFF</span>
+            </>
+          )}
+        </button>,
+        document.body
+      )}
+    </>
   );
 }

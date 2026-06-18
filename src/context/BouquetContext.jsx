@@ -106,6 +106,7 @@ export function BouquetProvider({ children, initialState }) {
   const [wrap, setWrap] = useState(initialState?.wrap ?? 'ivory');
   const [ribbon, setRibbon] = useState(initialState?.ribbon ?? { material: 'satin', color: 'white' });
   const [background, setBackground] = useState(initialState?.background ?? 'none');
+  const [isSharedView, setIsSharedView] = useState(false);
 
   const totalFlowers = useMemo(() => placedFlowers.length, [placedFlowers]);
   const canProceed = totalFlowers >= 6 && totalFlowers <= 10;
@@ -120,9 +121,10 @@ export function BouquetProvider({ children, initialState }) {
     wrap, setWrap,
     ribbon, setRibbon,
     background, setBackground,
+    isSharedView, setIsSharedView,
     totalFlowers,
     canProceed,
-  }), [step, mode, placedFlowers, letter, greenery, music, wrap, ribbon, background, totalFlowers, canProceed]);
+  }), [step, mode, placedFlowers, letter, greenery, music, wrap, ribbon, background, isSharedView, totalFlowers, canProceed]);
 
   return (
     <BouquetContext.Provider value={value}>

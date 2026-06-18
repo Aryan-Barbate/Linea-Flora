@@ -30,7 +30,7 @@ const STEPS = [
 ];
 
 function AppContent() {
-  const { step, setStep, setPlacedFlowers, setMode, setLetter, setMusic, setWrap, setRibbon, setBackground } = useBouquet();
+  const { step, setStep, setPlacedFlowers, setMode, setLetter, setMusic, setWrap, setRibbon, setBackground, setIsSharedView } = useBouquet();
 
   useEffect(() => {
     const state = decodeBouquetState();
@@ -42,6 +42,7 @@ function AppContent() {
       if (state.wrap) setWrap(state.wrap);
       if (state.ribbon) setRibbon(state.ribbon);
       if (state.background) setBackground(state.background);
+      setIsSharedView(true);
       setStep(6);
     }
   }, []);

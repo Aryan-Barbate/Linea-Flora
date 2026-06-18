@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useBouquet } from '../context/BouquetContext';
 import BouquetPreview from '../components/BouquetPreview';
 import MusicPlayer from '../components/MusicPlayer';
 import { encodeBouquetState } from '../utils/shareUrl';
 
 export default function PreviewScreen() {
-  const { placedFlowers, mode, greenery, letter, music, wrap, ribbon, background, setStep } = useBouquet();
+  const { placedFlowers, mode, greenery, letter, music, wrap, ribbon, background, setStep, isSharedView } = useBouquet();
   const [copied, setCopied] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleCopyLink = async () => {
     const url = encodeBouquetState(mode, placedFlowers, letter, { music, wrap, ribbon, background });
@@ -46,6 +47,72 @@ export default function PreviewScreen() {
 
   return (
     <div className={`flex-1 flex flex-col items-center px-4 py-4 min-h-screen ${bgClass}`}>
+      <AnimatePresence>
+        {isSharedView && !isOpen && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -20, transition: { duration: 0.4, ease: 'easeInOut' } }}
+            className="fixed inset-0 z-50 bg-[#FDFBF7] flex flex-col items-center justify-center p-6 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.35 }}
+              className="max-w-md w-full bg-white border border-black/10 p-8 sm:p-10 shadow-2xl relative flex flex-col items-center"
+              style={{
+                boxShadow: '0 20px 40px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.02)',
+              }}
+            >
+              {/* Envelope Decorative Tape / Seal */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-8 bg-[#F5F5DC] border border-black/5 rotate-[-1deg]" />
+              
+              <div className="font-mono text-[10px] tracking-[0.2em] text-black/40 uppercase mb-8">
+                ✦ DIGIBOUQUET ✦
+              </div>
+
+              <div className="w-16 h-16 rounded-full bg-cream flex items-center justify-center mb-6 text-2xl border border-black/5 animate-pulse">
+                🌸
+              </div>
+
+              <h2 className="font-serif text-2xl text-black/80 mb-2 leading-snug">
+                You've received a bouquet
+              </h2>
+              
+              {(letter.recipient || letter.sender) && (
+                <div className="my-6 py-4 border-y border-black/5 w-full font-mono text-xs text-black/60 space-y-1">
+                  {letter.recipient && (
+                    <div>
+                      <span className="text-black/30">FOR:</span> {letter.recipient}
+                    </div>
+                  )}
+                  {letter.sender && (
+                    <div>
+                      <span className="text-black/30">FROM:</span> {letter.sender}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <p className="font-mono text-[10px] text-black/40 uppercase tracking-widest mb-8">
+                {music && music.type !== 'none' 
+                  ? "Contains background music" 
+                  : "Contains a personal message"}
+              </p>
+
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setIsOpen(true)}
+                className="w-full text-xs py-4 bg-black text-[#FDFBF7] hover:bg-black/90 font-mono uppercase tracking-widest transition-colors duration-150 shadow-md flex items-center justify-center gap-2"
+              >
+                <span>OPEN BOUQUET</span>
+                {music && music.type !== 'none' && <span>♪</span>}
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -72,7 +139,7 @@ export default function PreviewScreen() {
         Hi, I made this bouquet for you!
       </motion.h2>
 
-      <MusicPlayer music={music} />
+      {(!isSharedView || isOpen) && <MusicPlayer music={music} />}
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center w-full max-w-5xl">
         {/* ── Bouquet ── */}
