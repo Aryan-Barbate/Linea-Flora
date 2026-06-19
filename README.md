@@ -64,7 +64,8 @@ View the final interactive presentation of the wrapped bouquet. Play your backgr
 - **Music Selection**: Add ambient music to play while your recipient unwraps their bouquet.
 - **Wrapping & Ribbon Curation**: Tie the bouquet together with a choice of wrapping paper styles and decorative ribbons.
 - **Vibrant Color vs. Sketch Modes**: Build your bouquet in full color or classic pencil sketch style.
-- **The Garden (Saved Bouquets)**: Save your completed bouquets locally in your personal "Garden" grid to view, share, or delete them anytime.
+- **The Garden (Saved Bouquets)**: Save your completed bouquets locally in your personal "Garden" gallery to view, share, or delete them anytime.
+  ![The Garden Gallery](docs/screenshots/garden.png)
 - **URL-Based Sharing**: Share your custom bouquet via a lightweight base64 encoded URL state—no database required!
 
 ---
