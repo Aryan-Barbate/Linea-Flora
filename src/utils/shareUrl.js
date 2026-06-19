@@ -19,7 +19,63 @@ function generateFallbackPlacement(flowerIds) {
   });
 }
 
-export function encodeBouquetState(mode, placedFlowers, letter, extras = {}) {
+// Compress string to base64url using gzip
+async function compress(str) {
+  const bytes = new TextEncoder().encode(str);
+  const stream = new Blob([bytes]).stream();
+  const compressedStream = stream.pipeThrough(new CompressionStream('gzip'));
+  const buffer = await new Response(compressedStream).arrayBuffer();
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// Decompress base64url using gzip
+async function decompress(base64url) {
+  let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4) base64 += '=';
+  
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  
+  const stream = new Blob([bytes]).stream();
+  const decompressedStream = stream.pipeThrough(new DecompressionStream('gzip'));
+  const buffer = await new Response(decompressedStream).arrayBuffer();
+  return new TextDecoder().decode(buffer);
+}
+
+export async function encodeBouquetState(mode, placedFlowers, letter, extras = {}) {
+  // Check for CompressionStream support
+  if (typeof CompressionStream !== 'undefined') {
+    try {
+      const stateObj = {
+        m: mode === 'mono' ? 1 : 0,
+        f: placedFlowers.map((f) => [
+          f.flowerId,
+          Math.round(f.x),
+          Math.round(f.y),
+          Math.round(f.rotation),
+          Math.round(f.scale * 100),
+          f.z,
+          f.flipped ? 1 : 0
+        ]),
+        l: [letter.sender || '', letter.recipient || '', letter.message || ''],
+        mu: [extras.music?.type || 'none', extras.music?.source || '', extras.music?.preset || ''],
+        w: extras.wrap || 'ivory',
+        r: [extras.ribbon?.material || 'satin', extras.ribbon?.color || 'white'],
+        bg: extras.background || 'none'
+      };
+      
+      const compressedStr = await compress(JSON.stringify(stateObj));
+      return `${window.location.origin}${window.location.pathname}?s=${compressedStr}`;
+    } catch (err) {
+      console.error('Failed to compress state, falling back to plaintext URL:', err);
+    }
+  }
+
+  // Fallback to old query string format if CompressionStream is not supported or fails
   const params = new URLSearchParams();
   if (placedFlowers.length) {
     params.set('flowers', placedFlowers.map((f) => f.flowerId).join(','));
@@ -49,8 +105,58 @@ export function encodeBouquetState(mode, placedFlowers, letter, extras = {}) {
   return qs ? `${window.location.origin}${window.location.pathname}?${qs}` : window.location.href;
 }
 
-export function decodeBouquetState() {
+export async function decodeBouquetState() {
   const params = new URLSearchParams(window.location.search);
+  const s = params.get('s');
+
+  if (s) {
+    try {
+      if (typeof DecompressionStream !== 'undefined') {
+        const decodedStr = await decompress(s);
+        const stateObj = JSON.parse(decodedStr);
+        
+        // Map back to the application state structure
+        const placedFlowers = (stateObj.f || []).map((arr) => {
+          const [flowerId, x, y, rotation, scale, z, flipped] = arr;
+          return {
+            id: `${flowerId}-${z}`,
+            flowerId,
+            x: Number(x) || 0,
+            y: Number(y) || 0,
+            rotation: Number(rotation) || 0,
+            scale: (Number(scale) || 100) / 100,
+            z: Number(z) || 1,
+            flipped: flipped === 1
+          };
+        });
+
+        return {
+          placedFlowers,
+          mode: stateObj.m === 1 ? 'mono' : 'color',
+          letter: {
+            sender: stateObj.l?.[0] || '',
+            recipient: stateObj.l?.[1] || '',
+            message: stateObj.l?.[2] || ''
+          },
+          music: {
+            type: stateObj.mu?.[0] || 'none',
+            source: stateObj.mu?.[1] || '',
+            preset: stateObj.mu?.[2] || ''
+          },
+          wrap: stateObj.w || 'ivory',
+          ribbon: {
+            material: stateObj.r?.[0] || 'satin',
+            color: stateObj.r?.[1] || 'white'
+          },
+          background: stateObj.bg || 'none'
+        };
+      }
+    } catch (err) {
+      console.error('Failed to decompress state:', err);
+    }
+  }
+
+  // Fallback to decoding the old URL format
   const flowersStr = params.get('flowers');
   const placementStr = params.get('p');
   const mode = params.get('mode');

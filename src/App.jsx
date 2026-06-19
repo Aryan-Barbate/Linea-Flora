@@ -33,18 +33,21 @@ function AppContent() {
   const { step, setStep, setPlacedFlowers, setMode, setLetter, setMusic, setWrap, setRibbon, setBackground, setIsSharedView } = useBouquet();
 
   useEffect(() => {
-    const state = decodeBouquetState();
-    if (state.placedFlowers.length > 0) {
-      setPlacedFlowers(state.placedFlowers);
-      setMode(state.mode);
-      setLetter(state.letter);
-      if (state.music) setMusic(state.music);
-      if (state.wrap) setWrap(state.wrap);
-      if (state.ribbon) setRibbon(state.ribbon);
-      if (state.background) setBackground(state.background);
-      setIsSharedView(true);
-      setStep(6);
+    async function loadSharedBouquet() {
+      const state = await decodeBouquetState();
+      if (state.placedFlowers.length > 0) {
+        setPlacedFlowers(state.placedFlowers);
+        setMode(state.mode);
+        setLetter(state.letter);
+        if (state.music) setMusic(state.music);
+        if (state.wrap) setWrap(state.wrap);
+        if (state.ribbon) setRibbon(state.ribbon);
+        if (state.background) setBackground(state.background);
+        setIsSharedView(true);
+        setStep(6);
+      }
     }
+    loadSharedBouquet();
   }, []);
 
   const Screen = STEPS[step] || STEPS[0];

@@ -28,16 +28,11 @@ export default function LandingScreen() {
           />
         </picture>
 
-        <img
-          src="https://assets.pauwee.com/other/digibouquet.png"
-          alt="digibouquet"
-          width={600}
-          height={400}
-          className="object-cover mx-auto"
-          draggable={false}
-        />
+        <h1 className="text-4xl sm:text-6xl font-bold tracking-[0.25em] uppercase font-mono mt-4 mb-10 text-black leading-tight select-none">
+          Linea Flora
+        </h1>
 
-        <p className="my-6 text-sm font-mono uppercase tracking-wider md:mb-6 md:-mt-6">
+        <p className="my-6 text-sm font-mono uppercase tracking-wider md:mb-8">
           beautiful flowers <br /> delivered digitally
         </p>
 

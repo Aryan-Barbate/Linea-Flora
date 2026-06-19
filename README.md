@@ -1,13 +1,21 @@
-# 🌸 DigiBouquet — Send a Digital Flower Bouquet
+# 🌸 Linea Flora — Send a Digital Flower Bouquet
 
-DigiBouquet is a beautiful, interactive web application that allows users to design custom digital flower bouquets, write personalized greeting cards, select ambient soundtracks, and share their creations with loved ones.
+Linea Flora (formerly DigiBouquet) is a beautiful, interactive web application that allows users to design custom digital flower bouquets, write personalized greeting cards, select ambient soundtracks, and share their creations with loved ones.
 
-Featuring a hand-drawn illustration aesthetic, smooth transitions, and intuitive design canvas controls, DigiBouquet brings the warmth of gifting flowers to the digital world.
+Featuring a hand-drawn illustration aesthetic, smooth transitions, and intuitive design canvas controls, Linea Flora brings the warmth of gifting flowers to the digital world.
 
 ---
 
 ## Live Demo
 [![Live Demo](https://img.shields.io/badge/Vercel-Live%20Demo-black?logo=vercel)](https://digi-bouquet-ab.vercel.app/)
+
+---
+
+## ✨ Recent Updates
+- **Rebranded to Linea Flora**: Updated the website name, main headers, landing screen, shared bouquet cards, and window titles to the elegant new brand *Linea Flora*.
+- **Custom Favicon Integration**: Integrated the new signature floral bouquet image as the website's favicon.
+- **Enhanced SEO & Social Metadata**: Added comprehensive metadata including description, keywords, author, and theme-color tags. Enabled rich social link previews by configuring Open Graph (OG) and Twitter Card tags.
+- **Flower Selection Bounding Box Fix**: Resolved a critical layout alignment bug in the builder canvas where the selection bounding box, resize handles, and delete/duplicate buttons were offset far above and to the left of the flower. The bounding box, handles, and action buttons now frame the flower image perfectly and rotate in synchrony with it.
 
 ---
 
@@ -17,7 +25,7 @@ Below is the complete 8-step journey of crafting and sending a digital bouquet.
 
 ### Step 1: Landing & Style Choice
 Welcome to the garden! Start building your custom digital bouquet in full vibrant colors or classic hand-drawn black and white sketches.
-![DigiBouquet Landing Screen](docs/screenshots/home.png)
+![Linea Flora Landing Screen](docs/screenshots/home.png)
 
 ### Step 2: Canvas Construction (Greenery)
 Choose your greenery style and start placing flowers onto the bouquet canvas.

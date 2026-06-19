@@ -11,7 +11,7 @@ export default function PreviewScreen() {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleCopyLink = async () => {
-    const url = encodeBouquetState(mode, placedFlowers, letter, { music, wrap, ribbon, background });
+    const url = await encodeBouquetState(mode, placedFlowers, letter, { music, wrap, ribbon, background });
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -29,10 +29,10 @@ export default function PreviewScreen() {
   };
 
   const handleShare = async () => {
-    const url = encodeBouquetState(mode, placedFlowers, letter, { music, wrap, ribbon, background });
+    const url = await encodeBouquetState(mode, placedFlowers, letter, { music, wrap, ribbon, background });
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Digibouquet', text: 'I made a bouquet for you!', url });
+        await navigator.share({ title: 'Linea Flora', text: 'I made a bouquet for you!', url });
       } catch { /* share cancelled */ }
     } else {
       handleCopyLink();
@@ -67,7 +67,7 @@ export default function PreviewScreen() {
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-8 bg-[#F5F5DC] border border-black/5 rotate-[-1deg]" />
               
               <div className="font-mono text-[10px] tracking-[0.2em] text-black/40 uppercase mb-8">
-                ✦ DIGIBOUQUET ✦
+                ✦ LINEA FLORA ✦
               </div>
 
               <div className="w-16 h-16 rounded-full bg-cream flex items-center justify-center mb-6 text-2xl border border-black/5 animate-pulse">
@@ -118,15 +118,14 @@ export default function PreviewScreen() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <a href="/" onClick={(e) => { e.preventDefault(); setStep(0); }} className="mt-4 inline-block">
-          <img
-            src="https://assets.pauwee.com/other/digibouquet.png"
-            alt="digibouquet"
-            width={160}
-            height={64}
-            className="object-cover pointer-events-none select-none"
-            draggable={false}
-          />
+        <a 
+          href="/" 
+          onClick={(e) => { e.preventDefault(); setStep(0); }} 
+          className="mt-4 inline-block text-center select-none"
+        >
+          <span className="font-mono text-lg uppercase tracking-[0.25em] font-bold text-black hover:opacity-75 transition-opacity duration-150">
+            Linea Flora
+          </span>
         </a>
       </motion.div>
 

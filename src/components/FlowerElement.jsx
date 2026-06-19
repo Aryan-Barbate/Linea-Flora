@@ -11,7 +11,6 @@ export default function FlowerElement({ item, isSelected, isDragging, onPointerD
   const base = CDN[mode] || CDN.color;
   const imgSize = getBouquetImgSize(item.flowerId);
   const finalSize = imgSize * item.scale * scale;
-  const halfSize = finalSize / 2;
   const handleSize = 10;
   const rotateHandleOffset = 24;
 
@@ -50,7 +49,7 @@ export default function FlowerElement({ item, isSelected, isDragging, onPointerD
       style={{
         left: `${(250 + item.x) * scale}px`,
         top: `${(210 + item.y) * scale}px`,
-        transform: 'translate(-50%, -50%)',
+        transform: `translate(-50%, -50%) rotate(${item.rotation}deg)`,
         zIndex: item.z,
         cursor: isDragging ? 'grabbing' : 'grab',
         touchAction: 'none',
@@ -65,7 +64,7 @@ export default function FlowerElement({ item, isSelected, isDragging, onPointerD
         height={finalSize}
         className="pointer-events-none select-none"
         style={{
-          transform: `rotate(${item.rotation}deg) scaleX(${item.flipped ? -1 : 1})`,
+          transform: `scaleX(${item.flipped ? -1 : 1})`,
         }}
         draggable={false}
       />
@@ -75,8 +74,8 @@ export default function FlowerElement({ item, isSelected, isDragging, onPointerD
         <div
           className="absolute pointer-events-none"
           style={{
-            left: `${-halfSize - 4}px`,
-            top: `${-halfSize - 4}px`,
+            left: `${-4}px`,
+            top: `${-4}px`,
             width: `${finalSize + 8}px`,
             height: `${finalSize + 8}px`,
           }}

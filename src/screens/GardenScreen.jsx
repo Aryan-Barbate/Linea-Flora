@@ -6,15 +6,14 @@ export default function GardenScreen() {
 
   return (
     <div className="flex-1 flex flex-col items-center min-h-screen">
-      <a href="/" onClick={(e) => { e.preventDefault(); setStep(0); }} className="mt-6">
-        <img
-          src="https://assets.pauwee.com/other/digibouquet.png"
-          alt="digibouquet"
-          width={180}
-          height={72}
-          className="object-cover mx-auto pointer-events-none select-none"
-          draggable={false}
-        />
+      <a 
+        href="/" 
+        onClick={(e) => { e.preventDefault(); setStep(0); }} 
+        className="mt-6 block text-center select-none"
+      >
+        <span className="font-mono text-xl uppercase tracking-[0.25em] font-bold text-black hover:opacity-75 transition-opacity duration-150">
+          Linea Flora
+        </span>
       </a>
 
       <h2 className="font-mono text-sm uppercase tracking-[0.2em] mt-6 mb-2">OUR GARDEN</h2>
