@@ -7,7 +7,7 @@ Featuring a hand-drawn illustration aesthetic, smooth transitions, and intuitive
 ---
 
 ## Live Demo
-[![Live Demo](https://img.shields.io/badge/Vercel-Live%20Demo-black?logo=vercel)](https://digi-bouquet-ab.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Vercel-Live%20Demo-black?logo=vercel)](https://linea-flora-ab.vercel.app/)
 
 ---
 
