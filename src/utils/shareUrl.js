@@ -46,27 +46,127 @@ async function decompress(base64url) {
   return new TextDecoder().decode(buffer);
 }
 
+/**
+ * Build the compact bouquet state object used for both Redis storage
+ * and the legacy compressed URL format.
+ */
+function buildCompactState(mode, placedFlowers, letter, extras = {}) {
+  return {
+    m: mode === 'mono' ? 1 : 0,
+    f: placedFlowers.map((f) => [
+      f.flowerId,
+      Math.round(f.x),
+      Math.round(f.y),
+      Math.round(f.rotation),
+      Math.round(f.scale * 100),
+      f.z,
+      f.flipped ? 1 : 0
+    ]),
+    l: [letter.sender || '', letter.recipient || '', letter.message || ''],
+    mu: [extras.music?.type || 'none', extras.music?.source || '', extras.music?.preset || ''],
+    w: extras.wrap || 'ivory',
+    r: [extras.ribbon?.material || 'satin', extras.ribbon?.color || 'white'],
+    bg: extras.background || 'none'
+  };
+}
+
+/**
+ * Parse the compact bouquet state object back into app state.
+ */
+function parseCompactState(stateObj) {
+  const placedFlowers = (stateObj.f || []).map((arr) => {
+    const [flowerId, x, y, rotation, scale, z, flipped] = arr;
+    return {
+      id: `${flowerId}-${z}`,
+      flowerId,
+      x: Number(x) || 0,
+      y: Number(y) || 0,
+      rotation: Number(rotation) || 0,
+      scale: (Number(scale) || 100) / 100,
+      z: Number(z) || 1,
+      flipped: flipped === 1
+    };
+  });
+
+  return {
+    placedFlowers,
+    mode: stateObj.m === 1 ? 'mono' : 'color',
+    letter: {
+      sender: stateObj.l?.[0] || '',
+      recipient: stateObj.l?.[1] || '',
+      message: stateObj.l?.[2] || ''
+    },
+    music: {
+      type: stateObj.mu?.[0] || 'none',
+      source: stateObj.mu?.[1] || '',
+      preset: stateObj.mu?.[2] || ''
+    },
+    wrap: stateObj.w || 'ivory',
+    ribbon: {
+      material: stateObj.r?.[0] || 'satin',
+      color: stateObj.r?.[1] || 'white'
+    },
+    background: stateObj.bg || 'none'
+  };
+}
+
+// ─── NEW: Redis-backed short URL sharing ────────────────────────────
+
+/**
+ * Create a short share link by saving bouquet data to Redis via API.
+ * Returns the short URL string, e.g. "https://linea-flora-ab.vercel.app/b/abc123xyz"
+ *
+ * Falls back to the legacy encoded URL if the API call fails.
+ */
+export async function createShareLink(mode, placedFlowers, letter, extras = {}) {
+  const stateObj = buildCompactState(mode, placedFlowers, letter, extras);
+
+  try {
+    const response = await fetch('/api/bouquet/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(stateObj),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+
+    const { shareUrl } = await response.json();
+    return shareUrl;
+  } catch (err) {
+    console.error('Failed to create share link, falling back to encoded URL:', err);
+    // Fallback to legacy encoded URL
+    return encodeBouquetState(mode, placedFlowers, letter, extras);
+  }
+}
+
+/**
+ * Fetch shared bouquet data from Redis via API.
+ * Returns the parsed bouquet state or null if not found.
+ */
+export async function fetchSharedBouquet(id) {
+  const response = await fetch(`/api/bouquet/get?id=${encodeURIComponent(id)}`);
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch bouquet: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return parseCompactState(data);
+}
+
+// ─── LEGACY: Encoded URL sharing (kept for backward compatibility) ──
+
 export async function encodeBouquetState(mode, placedFlowers, letter, extras = {}) {
   // Check for CompressionStream support
   if (typeof CompressionStream !== 'undefined') {
     try {
-      const stateObj = {
-        m: mode === 'mono' ? 1 : 0,
-        f: placedFlowers.map((f) => [
-          f.flowerId,
-          Math.round(f.x),
-          Math.round(f.y),
-          Math.round(f.rotation),
-          Math.round(f.scale * 100),
-          f.z,
-          f.flipped ? 1 : 0
-        ]),
-        l: [letter.sender || '', letter.recipient || '', letter.message || ''],
-        mu: [extras.music?.type || 'none', extras.music?.source || '', extras.music?.preset || ''],
-        w: extras.wrap || 'ivory',
-        r: [extras.ribbon?.material || 'satin', extras.ribbon?.color || 'white'],
-        bg: extras.background || 'none'
-      };
+      const stateObj = buildCompactState(mode, placedFlowers, letter, extras);
       
       const compressedStr = await compress(JSON.stringify(stateObj));
       return `${window.location.origin}${window.location.pathname}?s=${compressedStr}`;
@@ -114,42 +214,7 @@ export async function decodeBouquetState() {
       if (typeof DecompressionStream !== 'undefined') {
         const decodedStr = await decompress(s);
         const stateObj = JSON.parse(decodedStr);
-        
-        // Map back to the application state structure
-        const placedFlowers = (stateObj.f || []).map((arr) => {
-          const [flowerId, x, y, rotation, scale, z, flipped] = arr;
-          return {
-            id: `${flowerId}-${z}`,
-            flowerId,
-            x: Number(x) || 0,
-            y: Number(y) || 0,
-            rotation: Number(rotation) || 0,
-            scale: (Number(scale) || 100) / 100,
-            z: Number(z) || 1,
-            flipped: flipped === 1
-          };
-        });
-
-        return {
-          placedFlowers,
-          mode: stateObj.m === 1 ? 'mono' : 'color',
-          letter: {
-            sender: stateObj.l?.[0] || '',
-            recipient: stateObj.l?.[1] || '',
-            message: stateObj.l?.[2] || ''
-          },
-          music: {
-            type: stateObj.mu?.[0] || 'none',
-            source: stateObj.mu?.[1] || '',
-            preset: stateObj.mu?.[2] || ''
-          },
-          wrap: stateObj.w || 'ivory',
-          ribbon: {
-            material: stateObj.r?.[0] || 'satin',
-            color: stateObj.r?.[1] || 'white'
-          },
-          background: stateObj.bg || 'none'
-        };
+        return parseCompactState(stateObj);
       }
     } catch (err) {
       console.error('Failed to decompress state:', err);

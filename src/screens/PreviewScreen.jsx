@@ -3,15 +3,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useBouquet } from '../context/BouquetContext';
 import BouquetPreview from '../components/BouquetPreview';
 import MusicPlayer from '../components/MusicPlayer';
-import { encodeBouquetState } from '../utils/shareUrl';
+import { createShareLink } from '../utils/shareUrl';
 
 export default function PreviewScreen() {
   const { placedFlowers, mode, greenery, letter, music, wrap, ribbon, background, setStep, isSharedView } = useBouquet();
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [sharing, setSharing] = useState(false);
+
+  const getShareUrl = async () => {
+    setSharing(true);
+    try {
+      const url = await createShareLink(mode, placedFlowers, letter, { music, wrap, ribbon, background });
+      return url;
+    } finally {
+      setSharing(false);
+    }
+  };
 
   const handleCopyLink = async () => {
-    const url = await encodeBouquetState(mode, placedFlowers, letter, { music, wrap, ribbon, background });
+    const url = await getShareUrl();
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -29,7 +40,7 @@ export default function PreviewScreen() {
   };
 
   const handleShare = async () => {
-    const url = await encodeBouquetState(mode, placedFlowers, letter, { music, wrap, ribbon, background });
+    const url = await getShareUrl();
     if (navigator.share) {
       try {
         await navigator.share({ title: 'Linea Flora', text: 'I made a bouquet for you!', url });
@@ -210,17 +221,19 @@ export default function PreviewScreen() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleCopyLink}
-            className="text-xs px-5 py-2.5 bg-[#000000] text-beige hover:bg-black/90 font-mono uppercase tracking-widest transition-colors duration-150"
+            disabled={sharing}
+            className="text-xs px-5 py-2.5 bg-[#000000] text-beige hover:bg-black/90 font-mono uppercase tracking-widest transition-colors duration-150 disabled:opacity-50 disabled:cursor-wait"
           >
-            {copied ? 'Copied!' : 'Copy Link'}
+            {sharing ? 'Saving…' : copied ? 'Copied!' : 'Copy Link'}
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleShare}
-            className="text-xs px-5 py-2.5 border border-black text-black hover:bg-[#F5F5AC]/90 font-mono uppercase tracking-widest transition-colors duration-150"
+            disabled={sharing}
+            className="text-xs px-5 py-2.5 border border-black text-black hover:bg-[#F5F5AC]/90 font-mono uppercase tracking-widest transition-colors duration-150 disabled:opacity-50 disabled:cursor-wait"
           >
-            Share
+            {sharing ? 'Saving…' : 'Share'}
           </motion.button>
         </div>
         <button
